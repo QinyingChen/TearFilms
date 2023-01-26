@@ -8,7 +8,7 @@ using Krylov
 
 L=0.54   
 
-function solve_1d(a=-3,b=3,c=-3,d=3,m=15,n=10)
+function solve_1d(a=-3,b=3,c=-3,d=3,m=16,n=10)
    
 
     hx = (b-a)/m
@@ -78,7 +78,7 @@ function solve_1d(a=-3,b=3,c=-3,d=3,m=15,n=10)
     
     prob_mm = ODEProblem(f,u0,tspan,constants)
     
-    return x,y, solve(prob_mm,reltol=1e-8,abstol=1e-8)
+    return x,y, solve(prob_mm,QNDF(linsolve=LinSolveGMRES()),reltol=1e-8,abstol=1e-8)
 end
 
 

@@ -3,27 +3,30 @@ using LinearAlgebra
 using Plots
 using LaTeXStrings,Printf
 using ComponentArrays
+
 using FFTW
 using ToeplitzMatrices 
 
 L=0.540;
 
 function fourier(m,n)
-    
-    hx=2*π/m
+    hx = 2π / m
     x=-π.+hx*(0:m-1)
-    column=vcat(0,[0.5*(-1)^j.*cot(j*hx/2) for j in 1:m-1])
-    Dx=Circulant(column)
-    column2=vcat(-π^2/3hx^2-1/6,[-(-1)^j/(2*(sin(j*hx/2))^2) for j in 1:m-1])
-    Dxx=Circulant(column2)
-
-    hy=2*π/n
+    entry(k) = k==0 ? 0 : 0.5 * (-1)^k * cot(k * hx / 2)
+    Dx = [ entry(mod(i-j,m)) for i in 1:m, j in 1:m ]
+    
+    entry2(k) = k==0 ? -π^2/3hx^2-1/6 : -(-1)^k/(2*(sin(k*hx/2))^2)
+    Dxx = [ entry2(mod(i-j,m)) for i in 1:m, j in 1:m ]
+    
+    hy = 2π / n
     y=-π.+hy*(0:n-1)
-    column3=vcat(0,[0.5*(-1)^j.*cot(j*hy/2) for j in 1:n-1])
-    Dy=Circulant(column3)
-    column4=vcat(-π^2/3hy^2-1/6,[-(-1)^j/(2*(sin(j*hy/2))^2) for j in 1:n-1])
-    Dyy=Circulant(column4)
-
+    entry3(k) = k==0 ? 0 : 0.5 * (-1)^k * cot(k * hy / 2)
+    Dy = [ entry3(mod(i-j,n)) for i in 1:n, j in 1:n ]
+    
+    entry4(k) = k==0 ? -π^2/3hy^2-1/6 : -(-1)^k/(2*(sin(k*hy/2))^2)
+    Dyy = [ entry4(mod(i-j,n)) for i in 1:n, j in 1:n ]
+    
+    
     function TF2d(du,u,params,t)
     
         #vb=v_min/v_max  v_min=1μm/min, v_max=10μm/min 
@@ -63,10 +66,10 @@ function fourier(m,n)
     
     prob_mm = ODEProblem(f,u0,tspan,constants)
     
-    return x,y, solve(prob_mm,reltol=1e-8,abstol=1e-8)
+    return x,y, solve(prob_mm,QNDF(linsolve=LinSolveGMRES()),reltol=1e-8,abstol=1e-8)
 end
 
-x,y,sol=fourier(16,10);
+x,y,sol=fourier(42,40);
 
 ## solve for f
 
