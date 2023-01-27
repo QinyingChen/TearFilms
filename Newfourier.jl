@@ -7,7 +7,7 @@ using ComponentArrays
 using FFTW
 using ToeplitzMatrices 
 
-L=0.540;
+L=0.54;
 
 function fourier(m,n)
     hx = 2π / m
