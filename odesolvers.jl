@@ -7,7 +7,7 @@ using Krylov
 using LinearSolve
 using BenchmarkTools
 
-m=50;
+m=60;
 unvec = z ->reshape(z,m,m);
 
 hx = 2π / m
@@ -70,22 +70,10 @@ hx = 2π / m
       u_xx[:,j]=fft2(U[:,j])
       u_yy[j,:]=fft2(U[j,:])
     end
-   J .= Diagonal(vec(U))*kron(I(m),u_x) + kron(u_0,u_x) + p*(kron(I(m),u_xx) + kron(u_yy,I(m)))
-   # print("hi")
+   J .= Diagonal(vec(U))*kron(I(m),u_x) + kron((u_x*U)',I(m)) + p*(kron(I(m),u_xx) + kron(u_yy,I(m)))
+    #print("hi")
   end
-  function f_jvp(Jv,v,u,p,t)
-    U = unvec(u)
-    u_x = zeros(m,m);
-    u_xx = zeros(m,m);
-    u_yy = zeros(m,m);
-    for j=1:m
-      u_x[:,j]=fft1(U[:,j])
-      u_xx[:,j]=fft2(U[:,j])
-      u_yy[j,:]=fft2(U[j,:])
-    end
-    Jv .= (Diagonal(vec(U))*kron(I(m),u_x) + kron(u_0,u_x) + p*(kron(I(m),u_xx) + kron(u_yy,I(m))))*vec(v)
-    print("hi")
-  end
+  
 
    tspan=(0.0,3.0)  
         f = ODEFunction(dudt) 
@@ -103,16 +91,20 @@ hx = 2π / m
 
 time = @elapsed sol2 = solve(prob_mm,TRBDF2(linsolve=LinSolveFactorize(qr!),autodiff=false),reltol=1e-8,abstol=1e-8)
 
-time = @elapsed sol3 = solve(prob_mm,TRBDF2(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
+time = @elapsed sol3 = solve(prob_mm,QNDF(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
 
-time1 = @btime sol = solve(prob_mm,Rosenbrock23(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
-time2 = @btime sol1 = solve(prob_mm,TRBDF2(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
+@btime sol = solve(prob_mm,Rosenbrock23(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
+@btime sol1 = solve(prob_mm,TRBDF2(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
 
 t=range(0,3,21);
 surface(x,y,sol2[5],
 xlabel=L"x",ylabel=L"y",zaxis=((-5,5),L"u(x,y)"),
 color=:viridis,alpha=0.66,clims=(-4,4),colorbar=:none,
 title="graph",dpi=100 )
+
+Q=[1im+1 2;3+2im 4]
+Q'
+transpose(Q)
 
 
 
