@@ -13,12 +13,12 @@ unvec = z ->reshape(z,m,m);
 hx = 2π / m
     x=-π.+hx*(1:m)
     y=-π.+hx*(1:m)
-    #entry(k) = k==0 ? 0 : 0.5 * (-1)^k * cot(k * hx / 2)
-    #Dx = [ entry(mod(i-j,m)) for i in 1:m, j in 1:m ]
+    entry(k) = k==0 ? 0 : 0.5 * (-1)^k * cot(k * hx / 2)
+    Dx = [ entry(mod(i-j,m)) for i in 1:m, j in 1:m ]
     
     
-    #entry2(k) = k==0 ? -π^2/3hx^2-1/6 : -(-1)^k/(2*(sin(k*hx/2))^2)
-    #Dxx = [ entry2(mod(i-j,m)) for i in 1:m, j in 1:m ]
+    entry2(k) = k==0 ? -π^2/3hx^2-1/6 : -(-1)^k/(2*(sin(k*hx/2))^2)
+    Dxx = [ entry2(mod(i-j,m)) for i in 1:m, j in 1:m ]
     
    u0 = (x,y) -> sin(4*x)*cos(2*y)
       mtx = f-> [f(x,y) for x in x, y in y]
@@ -62,19 +62,13 @@ hx = 2π / m
 
    function f_jac(J,u,p,t)
     U = unvec(u)
-    u_x = zeros(m,m);
-    u_xx = zeros(m,m);
-    u_yy = zeros(m,m);
-    for j=1:m
-      u_x[:,j]=fft1(U[:,j])
-      u_xx[:,j]=fft2(U[:,j])
-      u_yy[j,:]=fft2(U[j,:])
-    end
-   J .= Diagonal(vec(U))*kron(I(m),u_x) + kron((u_x*U)',I(m)) + p*(kron(I(m),u_xx) + kron(u_yy,I(m)))
+    
+   J .= Diagonal(u)*kron(I(m),Dx) + kron((Dx*U)',I(m)) + p*(kron(I(m),Dxx) + kron(Dxx,I(m)))
+   
     #print("hi")
   end
   
-
+  
    tspan=(0.0,3.0)  
         f = ODEFunction(dudt) 
         f = ODEFunction(dudt;jac=f_jac) 
@@ -91,7 +85,7 @@ hx = 2π / m
 
 time = @elapsed sol2 = solve(prob_mm,TRBDF2(linsolve=LinSolveFactorize(qr!),autodiff=false),reltol=1e-8,abstol=1e-8)
 
-time = @elapsed sol3 = solve(prob_mm,QNDF(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
+time = @elapsed sol3 = solve(prob_mm,TRBDF2(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
 
 @btime sol = solve(prob_mm,Rosenbrock23(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
 @btime sol1 = solve(prob_mm,TRBDF2(linsolve=LinSolveGMRES(),autodiff=false),reltol=1e-8,abstol=1e-8)
@@ -102,9 +96,7 @@ xlabel=L"x",ylabel=L"y",zaxis=((-5,5),L"u(x,y)"),
 color=:viridis,alpha=0.66,clims=(-4,4),colorbar=:none,
 title="graph",dpi=100 )
 
-Q=[1im+1 2;3+2im 4]
-Q'
-transpose(Q)
+
 
 
 
