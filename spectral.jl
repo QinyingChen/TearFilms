@@ -21,6 +21,24 @@ function triginterp(v)
     end
 end
 
+# This is for real data only!
+function plan_fderiv(N::Integer, order::Integer=1)
+    @assert iseven(N)
+    v = ones(N)
+    F = plan_rfft(v)
+    F⁻¹ = plan_irfft(F*v, N)
+    sgn = iseven(order÷2) ? 1 : -1
+    if isodd(order)
+        mult = sgn * 1im * [(0:N/2-1).^order; 0] 
+    else
+        mult = sgn * (0:N/2).^order
+    end
+    return F, F⁻¹, mult
+end
+
+# real case with planning
+fderiv(v::Vector{T}, F, F⁻¹, mult) where T <: Real = F⁻¹ * ( mult .* (F*v)) 
+
 # real case
 function fderiv(v::Vector{T}, k::Integer=1) where T <: Real
     N = length(v)
