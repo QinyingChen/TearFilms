@@ -3,35 +3,39 @@ using LinearAlgebra
 using Plots
 using LaTeXStrings,Printf
 using ComponentArrays
+using BenchmarkTools
 
-using FFTW
-using ToeplitzMatrices 
+m=16;
+n=16; 
 
-L=0.54;
+hx = 2π / m
+x=-π.+hx*(1:m)
+
+entry(k) = k==0 ? 0.0 : 0.5 * (-1)^k * cot(k * hx / 2)
+Dx = [ entry(mod(i-j,m)) for i in 1:m, j in 1:m ]
+
+entry2(k) = k==0 ? -π^2/3hx^2-1/6 : -(-1)^k/(2*(sin(k*hx/2))^2)
+Dxx = [ entry2(mod(i-j,m)) for i in 1:m, j in 1:m ]
+
+hy = 2π / n
+y=-π.+hy*(1:n)
+entry3(k) = k==0 ? 0.0 : 0.5 * (-1)^k * cot(k * hy / 2)
+Dy = [ entry3(mod(i-j,n)) for i in 1:n, j in 1:n ]
+
+entry4(k) = k==0 ? -π^2/3hy^2-1/6 : -(-1)^k/(2*(sin(k*hy/2))^2)
+Dyy = [ entry4(mod(i-j,n)) for i in 1:n, j in 1:n ]
+
+hump=[exp(-(x/0.5)^2/2)*exp(-(y/0.5)^2/2) for x in x, y in y]
 
 function fourier(m,n)
-    hx = 2π / m
-    x=-π.+hx*(0:m-1)
-    entry(k) = k==0 ? 0 : 0.5 * (-1)^k * cot(k * hx / 2)
-    Dx = [ entry(mod(i-j,m)) for i in 1:m, j in 1:m ]
     
-    entry2(k) = k==0 ? -π^2/3hx^2-1/6 : -(-1)^k/(2*(sin(k*hx/2))^2)
-    Dxx = [ entry2(mod(i-j,m)) for i in 1:m, j in 1:m ]
-    
-    hy = 2π / n
-    y=-π.+hy*(0:n-1)
-    entry3(k) = k==0 ? 0 : 0.5 * (-1)^k * cot(k * hy / 2)
-    Dy = [ entry3(mod(i-j,n)) for i in 1:n, j in 1:n ]
-    
-    entry4(k) = k==0 ? -π^2/3hy^2-1/6 : -(-1)^k/(2*(sin(k*hy/2))^2)
-    Dyy = [ entry4(mod(i-j,n)) for i in 1:n, j in 1:n ]
     
     
     function TF2d(du,u,params,t)
     
-        #vb=v_min/v_max  v_min=1μm/min, v_max=10μm/min 
-        J=(x,y,p)->constants.vb.+(1-constants.vb)*hump(x,y).+ constants.alpha*p 
-        Jval = J(x,y,u.p)
+      
+        J=(p)->constants.vb.+(1-constants.vb)*hump.+ constants.alpha*p 
+        Jval = J(u.p)
             
         ubar=(-u.h.^2/12).*(Dx*u.p)
         vbar = (-u.h.^2/12).*(u.p*Dy')
@@ -52,16 +56,10 @@ function fourier(m,n)
         
     M = Diagonal([ones(m*n);zeros(m*n);ones(m*n)])
     f = ODEFunction(TF2d,mass_matrix=M)
-
     
-    hump(x,y)=[exp(-(x/constants.xw)^2/2)*exp(-(y/constants.xw)^2/2) for x in x, y in y]
-   
-   
-    #J=(x,y,p)->constants.vb.+(1-constants.vb)*hump(x,y).+ constants.alpha*p 
     
-    u0 = ComponentArray(h=ones(m,n),p=ones(m,n),c=ones(m,n)) 
-    constants = (vb=0.1,xw=0.5/L,alpha=4.06e-2,A=5.5e-3,Pc=0.392,invPec=1/6.76)
-    
+    constants = (vb=0.1,alpha=4.06e-2,A=0,Pc=0.392,invPec=1/6.76)
+    u0 = ComponentArray(h=ones(m,n),p=constants.A*ones(m,n),c=ones(m,n)) 
     tspan=(0.0,3.0)
     
     prob_mm = ODEProblem(f,u0,tspan,constants)
@@ -69,31 +67,20 @@ function fourier(m,n)
     return x,y, solve(prob_mm,QNDF(linsolve=LinSolveGMRES()),reltol=1e-8,abstol=1e-8)
 end
 
-x,y,sol=fourier(42,40);
+timeline= @benchmark x,y,sol=fourier(m,n)
+@elapsed x,y,sol=fourier(m,n)
+
 
 ## solve for f
 
 function solve_2df(m,n)
-    hx=2*π/m
-    x=-π.+hx*(0:m-1)
-    column=vcat(0,[0.5*(-1)^j.*cot(j*hx/2) for j in 1:m-1])
-    Dx=Circulant(column)
-    column2=vcat(-π^2/3hx^2-1/6,[-(-1)^j/(2*(sin(j*hx/2))^2) for j in 1:m-1])
-    Dxx=Circulant(column2)
-
-    hy=2*π/n
-    y=-π.+hy*(0:n-1)
-    column3=vcat(0,[0.5*(-1)^j.*cot(j*hy/2) for j in 1:n-1])
-    Dy=Circulant(column3)
-    column4=vcat(-π^2/3hy^2-1/6,[-(-1)^j/(2*(sin(j*hy/2))^2) for j in 1:n-1])
-    Dyy=Circulant(column4)
+   
 
 function TF2df(du,u,params,t)
     f_x = Dx*u.f 
     f_y = u.f*Dy'
-    w=sol(t)   
-    J=(x,y)->constants.vb.+(1-constants.vb)*hump(x,y).+ constants.alpha.*w.p
-    Jval = J(x,y)    
+    w=sol(t)    
+    Jval=constants.vb.+(1-constants.vb)*hump.+ constants.alpha.*w.p   
     ubar=(-w.h.^2/12).*(Dx*w.p)
     vbar = (-w.h.^2/12).*(w.p*Dy')
     osmo = params.Pc*(w.c .- 1)
@@ -105,21 +92,16 @@ M = Diagonal(ones(m*n))
 f = ODEFunction(TF2df,mass_matrix=M)
 
 
-hump(x,y)=[exp(-(x/constants.xw)^2/2)*exp(-(y/constants.xw)^2/2) for x in x, y in y]
-
-#J=(x,y)->constants.vb.+(1-constants.vb)*hump(x,y).+ constants.alpha.*w.p 
- 
-
 u0 = ComponentArray(f=ones(m,n)) 
-constants = (vb=0.1,xw=0.5/L,alpha=4.06e-2,A=5.5e-3,Pc=0.392,invPecf=1/27.7)
+constants = (vb=0.1,xw=0.5,alpha=4.06e-2,A=0,Pc=0.392,invPecf=1/27.7)
 
 tspan=(0.0,3.0)
 
 prob_mm = ODEProblem(f,u0,tspan,constants)
 
-return x,y, solve(prob_mm,reltol=1e-8,abstol=1e-8)
+return x,y, solve(prob_mm,QNDF(linsolve=LinSolveGMRES()),reltol=1e-8,abstol=1e-8)
 end
-x,y,solf=solve_2df(16,10);
+x,y,solf=solve_2df(m,n);
 
 
 
