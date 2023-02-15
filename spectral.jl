@@ -39,7 +39,30 @@ end
 # real case with planning
 fderiv(v::Vector{T}, F, F⁻¹, mult) where T <: Real = F⁻¹ * ( mult .* (F*v)) 
 
-# real case
+# 2D derivs with planning
+
+function plan_fderiv(sz::Tuple{T,T}) where T <: Integer
+    v = ones(sz)
+    F1 = plan_rfft(v, 1)
+    F1inv = plan_irfft(F1*v, sz[1], 1)
+    F2 = plan_rfft(v, 2)
+    F2inv = plan_irfft(F2*v, sz[2], 2)
+    F = (F1, F2)
+    Finv = (F1inv, F2inv)
+
+    m, n = sz
+    mult1 = ( 1im * [(0:m/2-1); 0] , transpose(1im * [(0:n/2-1); 0]) )
+    mult2 = ( -(0:m/2).^2, transpose(-(0:n/2).^2) )
+
+    return (fwd=F, inv=Finv, mul=[mult1, mult2])
+end
+
+function fderiv(v::AbstractMatrix{T}, dim::Integer, order::Integer, plan) where T <: Real
+    mul = plan.mul[order][dim]
+    return plan.inv[dim] * ( mul .* (plan.fwd[dim]*v) )
+end
+
+# real case, no planning
 function fderiv(v::Vector{T}, k::Integer=1) where T <: Real
     N = length(v)
     @assert iseven(N)
