@@ -18,3 +18,18 @@ include("spectral.jl")
 end
 
 
+@testset "fderiv2d" begin
+    x, Dx, Dxx = trig(44)
+    y, Dy, Dyy = trig(36)
+    u = [ exp(sin(2x) + cos(x) + cos(y) + sin(y)) for x in x, y in y ]
+
+    plan = plan_fderiv( (44, 36) )
+
+    @test isapprox(fderiv(u, 1, 1, plan), Dx*u )
+    @test isapprox(fderiv(u, 1, 2, plan), Dxx*u )
+    @test isapprox(fderiv(u, 2, 1, plan), u*Dy' )
+    @test isapprox(fderiv(u, 2, 2, plan), u*Dyy' )
+
+end
+
+
