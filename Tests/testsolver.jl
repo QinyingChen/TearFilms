@@ -1,3 +1,10 @@
+using DifferentialEquations
+using LinearAlgebra
+using ProgressMeter
+using Krylov
+using LinearSolve
+using BenchmarkTools
+
 function pack!(h, p, c) 
     
     return [vec(h);vec(p);vec(c)]
@@ -13,7 +20,7 @@ end
 
 m=42;
 n=42;
-function fourier(m, n;
+function fourier(
     tspan=(0.0,3.0),
     solver=QNDF(linsolve=KrylovJL_GMRES()),
     tol=1e-8
@@ -92,4 +99,4 @@ function fourier(m, n;
 
     return x, y, sol_hpc, sol_f
 end
-@elapsed x, y, sol_hpc, sol_f=fourier(42,42)
+x, y, sol_hpc, sol_f=fourier();
