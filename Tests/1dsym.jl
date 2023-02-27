@@ -64,7 +64,6 @@ constants = (J=J,vb=0.1,xw=0.5,alpha=4.06e-2,A=5.5e-3,Pc=0.392,invPec=1/6.76)
 
 #J = (x,p) -> constants.vb + (1-constants.vb)*hump(x) + constants.alpha*p
 
- #J=(x,p)->constants.vb.+(1-constants.vb)*hump(x)+ constants.alpha*extend(p)
 
  
 u0 = ComponentArray(h=ones(n),p=(Dxx*extend(ones(n))+constants.A*extend(ones(n)))[2:end-1],c=ones(n),f=ones(n))
