@@ -10,7 +10,7 @@ function newcheb(N)
     c(n) = (n==0) || (n==N) ? 2 : 1
     entry(i,j) = i==j ? 0 : c(i)/c(j) * (-1)^(i+j) / (x[i+1] - x[j+1])
     D = [ entry(i,j) for i in 0:N, j in 0:N ]
-    D  = D - diagm(vec(sum(D,dims=2)));    # diagonal entries
+    D  = D - diagm(vec(sum(D,dims=2)));    
     return D, x
 end
 
@@ -92,7 +92,7 @@ function flip(x)
    
    return z
    end
-   function flipm(x)
+   function flipc(x)
    z = zeros(size(x))
    for j=1:size(x)[2]
    
@@ -100,10 +100,18 @@ function flip(x)
    end
    return z
    end
-   H=vcat(h,flipm(h))
-   P=vcat(p,flipm(p))
-   C=vcat(c,flipm(c))
-   F=vcat(f,flipm(f))
+   function flipr(x)
+    z = zeros(size(x))
+    for j=1:size(x)[1]
+    
+        z[j,:]=flip(x[j,:])
+    end
+    return z
+    end
+   H=vcat(h,flipc(h))
+   P=vcat(p,flipc(p))
+   C=vcat(c,flipc(c))
+   F=vcat(f,flipc(f))
    X=[-x;flip(x)]
 
 label = hcat([@sprintf("t=%.2f",t) for t in t]...)
