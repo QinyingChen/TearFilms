@@ -45,7 +45,7 @@ norm((Dxx*U)[n:end]-Dxx_1*V,Inf)
     
 function solve1d(n)
 
-function TF1d(dv,v,params,t)
+function TF1d(dv,v,params,t)  
     h=v[1:n]
     p=v[n+1:2n]
     c=v[2n+1:3n]
@@ -63,8 +63,7 @@ function TF1d(dv,v,params,t)
    
   
     dv[n+1:2n].=-Dxx*h - p
-
-   # @show -Dxx*H - P   Not close to zero!
+ # @show -Dxx*h - p   close to zero. It is ok.
     dv[2n+1:3n].=(params.invPec*Dx*(h.*c_x)-params.Pc*(c.-1).*c+Jval.*c)./h-(ubar.*c_x)
        
 end
