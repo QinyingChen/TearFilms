@@ -112,18 +112,21 @@ function cheby(m, n;
 
     return x, y, sol_hpc
 end
-x, y, sol_hpc = cheby(m,n);
+x, y, sol_hpc = cheby(m-1,n-1);
 
 X=[-x;flip(x)]
 Y=[-y;flip(y)]
 
 R=reshape(sol_hpc(2)[1:m*n],(m,n))
-h1=extendy(extendx(reshape(sol_hpc(2)[1:m*n],(m,n))))
-p1=extendy(extendx(reshape(sol_hpc(2)[m*n+1:2m*n],(m,n))))
+h1=extendy(extendx(reshape(sol_hpc(2)[1:(m-1)*(n-1)],(m-1,n-1))))
+p1=extendy(extendx(reshape(sol_hpc(2)[(m-1)*(n-1)+1:2(m-1)*(n-1)],(m-1,n-1))))
 
 H=vcat(h1,flipc(h1))
 TR=vcat(flipr(h1),flipc(flipr(h1)))
-surface(X,Y,[H TR])
+surface(X,Y,[P TR])
+surface(x,y,p1)
+P=vcat(p1,flipc(p1))
+TR=vcat(flipr(p1),flipc(flipr(p1)))
 
 
 
