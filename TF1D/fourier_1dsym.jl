@@ -2,6 +2,7 @@ using DifferentialEquations
 using LinearAlgebra
 using Plots
 using LaTeXStrings,Printf
+include("utility.jl")
 # 1d streak symmetry
 m=64;   # change m, and run the whole thing
 n=Int(m/2);
@@ -80,3 +81,10 @@ P=sol(10)[n+2:2(n+1)]
 C=sol(10)[2(n+1)+1:3(n+1)]
 F=sol(10)[3(n+1)+1:4(n+1)]
 plot(x,P)
+
+X = [-(flip(x))[2:end-1];x]
+Hfull = [(flip(H))[2:end-1];H]
+plot(X,Hfull)
+
+Pfull = [(flip(P))[2:end-1];P]
+plot(X,Pfull)
