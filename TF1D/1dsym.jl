@@ -6,19 +6,19 @@ using LaTeXStrings,Printf
 using ComponentArrays 
 
 function newcheb(N)
-    x = [ 1+cos(pi*j/N) for j  in 0:N ]
+    x = [ 2*(1+cos(pi*j/N)) for j  in 0:N ]
     c(n) = (n==0) || (n==N) ? 2 : 1
     entry(i,j) = i==j ? 0 : c(i)/c(j) * (-1)^(i+j) / (x[i+1] - x[j+1])
     D = [ entry(i,j) for i in 0:N, j in 0:N ]
     D  = D - diagm(vec(sum(D,dims=2)));    
     return D, x
 end
-
+D,x = newcheb(64)
 function extend(V)
     Uy = endvals*V
     return [Uy[1]; V; Uy[2]]
 end
-N=40;
+N=64;
 D,x=newcheb(N)
 ends = [1, N+1]
 endvals = -D[ends, ends] \ D[ends,2:N]
@@ -44,7 +44,7 @@ function TF1d(du,u,params,t)
     tmp = Dx*(H.*ubar)
     @. du.h = (osmo - tmp - Jval)[2:end-1]
    
-    @. du.p = (-u_xx*H - params.A*H^(-3)- P)[2:end-1]
+    @. du.p = (-u_xx -params.A/H^3 - P)[2:end-1]
        
     tmp = Dx*(H.*c_x)
     @. du.c = ((params.invPec*tmp - osmo*C + Jval*C)/H - (ubar*c_x))[2:end-1]
@@ -73,9 +73,9 @@ prob_mm = ODEProblem(f,u0,tspan,constants)
 
 return x,solve(prob_mm,reltol=1e-8,abstol=1e-8)
 end
-x,sol=solve1d(39);
-Q=sol(4).p
-plot(x,extend(Q))
+x,sol2=solve1d(63);
+W=sol2(2).h
+plot(x,extend(W))
 
 t=range(0,3,21);
 u = sol.(t);
