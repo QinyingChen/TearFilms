@@ -2,7 +2,7 @@ using DifferentialEquations
 using LinearAlgebra
 using Plots
 using LaTeXStrings,Printf
-
+include("utility.jl")
 # 1d streak full solution
 function solve1d(n)
   
