@@ -4,7 +4,7 @@ using Plots
 using LaTeXStrings,Printf
 
 using ComponentArrays 
-
+include("utility.jl")
 function newcheb(N)
     x = [ 2*(1+cos(pi*j/N)) for j  in 0:N ]
     c(n) = (n==0) || (n==N) ? 2 : 1
@@ -84,30 +84,7 @@ p = hcat([extend(u.p) for u in u]...);
 c = hcat([extend(u.c) for u in u]...);
 f = hcat([extend(u.f) for u in u]...);
 
-function flip(x)
-    z = zeros(length(x))   
-       for i=1:length(x)
-           z[i]=x[length(x)+1-i]
-       end
-   
-   return z
-   end
-   function flipc(x)
-   z = zeros(size(x))
-   for j=1:size(x)[2]
-   
-       z[:,j]=flip(x[:,j])
-   end
-   return z
-   end
-   function flipr(x)
-    z = zeros(size(x))
-    for j=1:size(x)[1]
-    
-        z[j,:]=flip(x[j,:])
-    end
-    return z
-    end
+
    H=vcat(h,flipc(h))
    P=vcat(p,flipc(p))
    C=vcat(c,flipc(c))
