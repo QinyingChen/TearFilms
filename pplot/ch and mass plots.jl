@@ -1,4 +1,5 @@
-using Plots   
+using Plots 
+include("utility.jl")  
 m = 40;
 nx = Int(m/2);
 n = 40;
@@ -48,6 +49,10 @@ plot!(T2,ch2,xlabel="t",ylabel="ch",label="ellipse1");
 plot!(T3,ch3,xlabel="t",ylabel="ch",label="ellipse2");
 A_40 = plot!(T4,ch4,xlabel="t",ylabel="ch",label="streak")
 
+plot(T2,ch2,xlabel="t",ylabel="ch",label="rw=0.25",title="N=40");
+plot!(T,ch,xlabel="t",ylabel="ch",label="rw=0.5");
+plot!(T3,ch3,xlabel="t",ylabel="ch",label="rw=1")
+
 
 # H
 
@@ -77,6 +82,10 @@ plot(T,h,xlabel="t",ylabel="h",label="spot",title="N=40");
 plot!(T2,h2,xlabel="t",ylabel="h",label="ellipse1");
 plot!(T3,h3,xlabel="t",ylabel="h",label="ellipse2");
 Ah_40 = plot!(T4,h4,xlabel="t",ylabel="h",label="streak")
+
+plot(T2,h2,xlabel="t",ylabel="h",label="rw=0.25",title="N=40");
+plot!(T,h,xlabel="t",ylabel="h",label="rw=0.5");
+plot!(T3,h3,xlabel="t",ylabel="h",label="rw=1")
 
  # c
 c = zeros(length(T),1);
