@@ -6,7 +6,7 @@ using LinearSolve
 using Plots
 using LaTeXStrings,Printf
 using JLD2
-include("TF1D/utility.jl")
+include("utility.jl")
 function pack!(u, h, p, c) 
     m, n = size(h)
     mn = m*n

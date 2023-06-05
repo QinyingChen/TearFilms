@@ -2,7 +2,7 @@ using DifferentialEquations
 using LinearAlgebra
 using Plots
 using LaTeXStrings,Printf
-include("TF1D/utility.jl")
+include("utility.jl")
 
   
 function solve1d(m,xw,vb,Pc,invPec,invPecf)  
