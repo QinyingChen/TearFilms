@@ -78,4 +78,3 @@ prob_mm = ODEProblem(f,u0,tspan)
 
 return x,solve(prob_mm,callback=cb,reltol=1e-8,abstol=1e-8)
 end
-x10,sol10 = solve1d(80,0.5,0.1,0.392,1/6.76,1/27.7);
