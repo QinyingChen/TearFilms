@@ -26,7 +26,6 @@ function PODsol(m,n,xw,yw,vb,Pc,invPec,sh,sp,sc; t=range(0,0.5,41),tspan=(0,3))
     W[:,j] = sol_hpc(t[j])[1:m*n]
     end
     U,σ,V = svd(W)
-    σ
     Bh=U[:,1:sh]
     
     
@@ -35,7 +34,6 @@ function PODsol(m,n,xw,yw,vb,Pc,invPec,sh,sp,sc; t=range(0,0.5,41),tspan=(0,3))
     W[:,j] = sol_hpc(t[j])[m*n+1:m*n*2]
     end
     U,σ,V = svd(W)
-    σ
     Bp=U[:,1:sp]
     
     W = zeros(m*n, length(t))
@@ -43,7 +41,6 @@ function PODsol(m,n,xw,yw,vb,Pc,invPec,sh,sp,sc; t=range(0,0.5,41),tspan=(0,3))
     W[:,j] = sol_hpc(t[j])[2*m*n+1:3*m*n]
     end
     U,σ,V = svd(W)
-    σ
     Bc=U[:,1:sc]
     
     function PODfun(v, params, t)
