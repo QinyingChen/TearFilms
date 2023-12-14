@@ -25,7 +25,7 @@ function unpack(u, index)
 end
 
 function twodim_ode!(du, u, params, t)
-    Je, index, gridx, gridy, constants, progmeter = params
+    Je, index, gridx, gridy, constants = params
     @unpack Pc, invPec = constants
     h, p, c = unpack(u, index)
 
@@ -45,12 +45,11 @@ function twodim_ode!(du, u, params, t)
     tmp = gridx.D * (h .* c_x) + (h .* c_y) * gridy.D'
     dc = @. (invPec * tmp - osmo * c + Je * c) / h - (ubar * c_x + vbar * c_y)
     pack!(du, dh, dp, dc)
-    # update!(progmeter, tspan[2] - t)
 end
 
 function twodim_solve(m, n, tspan, xw=0.5, yw=0.5, vb=0.1,
     solver=QNDF(linsolve=KrylovJL_GMRES()),
-    tol=1e-8
+    tol=1e-6
     )
 
     # discretization
@@ -72,18 +71,16 @@ function twodim_solve(m, n, tspan, xw=0.5, yw=0.5, vb=0.1,
     condition(u,t,integrator)=(reshape(u[1:m*n],(m,n)))[center] < 1/4.5
     affect!(integrator) = terminate!(integrator)
     cb = DiscreteCallback(condition,affect!)
-    prog = ProgressThresh(0.0, 0.5)
 
-    params = (Je, index, gridx, gridy, pde_consts, prog)
+    params = (Je, index, gridx, gridy, pde_consts)
     dudt = ODEFunction(twodim_ode!, mass_matrix=M)
     prob_hpc = ODEProblem(dudt, u0, tspan, params)
 
     if isnothing(solver)
-        sol_hpc = solve(prob_hpc, reltol=tol, abstol=tol)
+        sol_hpc = solve(prob_hpc, reltol=tol, abstol=tol, progress=true, progress_steps=20)
     else
-        sol_hpc = solve(prob_hpc, solver, callback=cb, reltol=tol, abstol=tol)
+        sol_hpc = solve(prob_hpc, solver, callback=cb, reltol=tol, abstol=tol, progress=true, progress_steps=20)
     end
-    update!(prog, 0.0)
 
     h = t -> reshape(sol_hpc(t, idxs=index.h), index.size)
     p = t -> reshape(sol_hpc(t, idxs=index.p), index.size)

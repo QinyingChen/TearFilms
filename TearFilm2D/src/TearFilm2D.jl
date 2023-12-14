@@ -3,7 +3,7 @@ module TearFilm2D
 using Parameters
 using DifferentialEquations
 using LinearAlgebra
-using ProgressMeter
+using ProgressLogging
 using Krylov, LinearSolve
 
 export PhysicalConstants
