@@ -74,7 +74,7 @@ function radial_ode!(dv, v, params, t)
     return dv
 end
 
-function radial_solve(n, tspan, rw=0.5, vb=0.1)
+function radial_solve(n, tspan, rw=0.5, vb=0.1,d=4.5e-6)
     # discretization parameters
     grid = Grid1DSym(2n, sqrt(2))
     M = Diagonal([ones(n+1); zeros(n+1); ones(n+1)])
@@ -83,7 +83,7 @@ function radial_solve(n, tspan, rw=0.5, vb=0.1)
 
     # physical parameters
     consts = PhysicalConstants()
-    pde_consts = PDEConstants(consts, 1e-6 / (60vb))
+    pde_consts = PDEConstants(consts, 1e-6 / (60vb),d)
 
     # evaporative flux
     hump = @. exp(-(grid.t / rw)^2 / 2)

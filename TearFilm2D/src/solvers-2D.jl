@@ -47,7 +47,7 @@ function twodim_ode!(du, u, params, t)
     pack!(du, dh, dp, dc)
 end
 
-function twodim_solve(m, n, tspan, xw=0.5, yw=0.5, vb=0.1,
+function twodim_solve(m, n, tspan, xw=0.5, yw=0.5, vb=0.1,d = 4.5e-6,
     solver=QNDF(linsolve=KrylovJL_GMRES()),
     tol=1e-6
     )
@@ -60,7 +60,7 @@ function twodim_solve(m, n, tspan, xw=0.5, yw=0.5, vb=0.1,
 
     # physical parameters
     consts = PhysicalConstants()
-    pde_consts = PDEConstants(consts, 1e-6 / (60vb))
+    pde_consts = PDEConstants(consts, 1e-6 / (60vb),d)
 
     # evaporative flux
     hump = [ exp(-(x/xw)^2 / 2 - (y/yw)^2 / 2) for x in gridx.t, y in gridy.t ]

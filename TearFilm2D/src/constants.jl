@@ -5,7 +5,6 @@
     c0 = 300.0
     sigma_0 = 0.045
     mu = 1.3e-3
-    d = 4.5e-6
     Df = 0.39e-9
     D0 = 1.6e-9
 end
@@ -18,8 +17,8 @@ end
     invPec::Float64
 end
 
-function PDEConstants(p::PhysicalConstants, v_max::Real)
-    @unpack p0, vw, c0, sigma_0, mu, d, D0 = p
+function PDEConstants(p::PhysicalConstants, v_max::Real, d::Real)
+    @unpack p0, vw, c0, sigma_0, mu, D0 = p
     ell = (sigma_0 / mu / v_max)^(1 / 4) * d
     eps = d / ell
     Pc = (p0 * vw * c0) / v_max
