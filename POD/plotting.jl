@@ -1,5 +1,5 @@
 function fourierf(m, n;
-    tspan=(0.0,1.0),
+    tspan=(0.0,2.4),
     tol=1e-8
     )
     hx = 2π / m
