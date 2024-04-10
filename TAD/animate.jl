@@ -16,4 +16,3 @@ framerate = framerate) do t
     time[] = t
     ax.title[] = "t = $(round(t, digits = 1))"
 end
-https://udcs.ead.udel.edu/psc/SAPRD/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_AGSTARTPAGE_NUI.GBL?CONTEXTIDPARAMS=TEMPLATE_ID%3aPTPPNAVCOL&scname=ADMN_UDSS_FAC_FORMS_TL&PTPPB_GROUPLET_ID=FACULTY&CRefName=ADMN_NAVCOLL_5&AJAXTRANSFER=Y
