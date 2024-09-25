@@ -37,7 +37,7 @@ xs = range(0,1,100)
       #  u_predict = [first((phi[1]([t, x], θ[:u]))) for t in ts for x in xs]
        
         return sum(abs2, first((phi[1]([t,x], θ[:u]))) - u_exact(x,t) for t in ts for x in xs) 
-    end x
+    end 
 
 
 discretization = NeuralPDE.PhysicsInformedNN([u_chain],
