@@ -5,7 +5,7 @@ using DifferentialEquations, JLD2
 
 n = 64  # space resolution
 m = 80  # time resolution
-N = 10000   # number of samples
+N = 5000   # number of samples
 
 # heat equation
 function timederiv(u, p, t)
@@ -20,7 +20,7 @@ for idx in 1:N
     coeff = [-1]
     # random coefficient
     while any(coeff .< 0)
-        coeff = 1 .+ sum(sinpi.(k.*x) .* 0.25*randn()/k for k in 1:15)
+        coeff = 1 .+ sum(sinpi.(k.*x) .* 0.4*randn()/k^2 for k in 1:15)
     end
     diff_coeff[:, idx] .= coeff
     ivp = ODEProblem(timederiv, u₀.(x), (0.0, 1.0), coeff)
@@ -42,8 +42,8 @@ pca_coeff = MultiPCA(diff_coeff, rank=16, eps=0.01)
 C = transform(pca_coeff, diff_coeff);
 @save "heat1d_pca.jld2" pca_sol pca_coeff V C
 
-using HDF5
-h5open("heat1d_pca.h5", "w") do file
-    write(file, "V", V)
-    write(file, "C", C)
-end
+# using HDF5
+# h5open("heat1d_pca.h5", "w") do file
+#     write(file, "V", V)
+#     write(file, "C", C)
+# end
