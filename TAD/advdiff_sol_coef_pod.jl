@@ -24,13 +24,13 @@ function convert_data(data, batchsize, train_split=0.8)
     k_pca = fit(PCA, data.K; maxoutdim=11, pratio=0.99999)
     k = predict(k_pca, data.K)
     y = vcat(k, c)
-    (X_train, y_train), (X_test, y_test) = splitobs((X, y); at=train_split)
-    return (; ux=u_pod, ut=u_pca, c=c_pca, k=k_pca),
-     DataLoader(collect.((X_train, y_train)); batchsize, shuffle=true),
-        DataLoader(collect.((X_test, y_test)); batchsize, shuffle=false)
+    index_train, index_test = splitobs(axes(data.U, 3), at=train_split, shuffle=true)
+    return (; train=index_train, test=index_test), (; ux=u_pod, ut=u_pca, c=c_pca, k=k_pca),
+     DataLoader(collect.((X[:, index_train], y[:,index_train])); batchsize),
+        DataLoader(collect.((X[:, index_test], y[:,index_test])); batchsize)
 end
 
-pca, train_loader, test_loader = convert_data(data, 200);
+index, pca, train_loader, test_loader = convert_data(data, 200);
 dim_input = size(train_loader.data[1])[1]
 dim_output = size(train_loader.data[2], 1)
 println("input data has dimension $(dim_input)")
@@ -59,7 +59,7 @@ loss = Flux.Losses.mse
 state = Flux.setup(Flux.Adam(0.001), model)
 
 ##
-for epoch in 1:200
+for epoch in 1:100
     Flux.train!(model, train_loader, state) do m, x, y
         loss(m(x), y)
     end
@@ -78,12 +78,13 @@ end
 
 y_pred = hcat([model(x) for (x, _) in test_loader]...);
 k_pred, c_pred = coeffs(y_pred, pca)
-y_true = hcat([y for (_, y) in test_loader]...);
-k_true, c_true = coeffs(test_loader.data[2], pca)
+k_true = view(data.K, :, index.test)
+c_true = view(data.C, :, index.test)
 norm_diff_c = map(norm, eachcol(c_pred - c_true)) / 8
 norm_diff_k = map(norm, eachcol(k_pred - k_true)) / 8
 qc = quantile(log10.(norm_diff_c), 0:.25:1)
-qk = quantile(log10.(norm_diff_k), 0:.25:1);
+qk = quantile(log10.(norm_diff_k), 0:.25:1)
+[qc qk]
 
 ##
 fig = Figure(colormap="matter", markersize=5)
