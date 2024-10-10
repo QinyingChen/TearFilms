@@ -10,10 +10,13 @@ function registration(X::AbstractArray{<:Number, 3}, center, radius, search_radi
     for frame in nframes-1:-1:1
         center = CartesianIndex(centers[frame + 1])
         X0 = view(X, window .+ center, frame+1)  # reference to be matched
-        dif(shift) = view(X, window .+ (center + shift), frame) - X0  # difference from reference
-        idx = argmin( sum(abs, dif(shift)) for shift in δ )
-        centers[frame] = Tuple(center + δ[idx])
-        indices[frame] = window .+ (center + δ[idx])
+        dif(shift) = sum(abs, view(X, window .+ (center + shift), frame) - X0)  # difference from reference
+        stay_diff = dif(CartesianIndex((0, 0)))
+        min_diff, idx = findmin( dif(shift) for shift in δ )
+        if min_diff < 0.95 * stay_diff
+            centers[frame] = Tuple(center + δ[idx])
+            indices[frame] = window .+ (center + δ[idx])
+        end
     end
     return indices, centers
 end
